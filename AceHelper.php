@@ -32,10 +32,16 @@ class AceHelper
                 textarea.addClass('hidden');
 
                 var editor = ace.edit(editDiv[0]);
+                var mode = (textarea.data('editor')).trim();
+                var theme = ('{$theme}').trim();
                 editor.setReadOnly(textarea.data('read-only'));
                 editor.getSession().setValue(textarea.val());
-                editor.getSession().setMode('ace/mode/' + textarea.data('editor'));
-                editor.setTheme('ace/theme/{$theme}');
+                if (mode.length !== 0) {
+                    editor.getSession().setMode('ace/mode/' + mode);
+                }
+                if (theme.length !== 0) {
+                    editor.setTheme('ace/theme/' + theme);
+                }
 
                 editor.getSession().on('change', function() {
                     textarea.val(editor.getSession().getValue());

@@ -29,9 +29,15 @@ class Ace extends Widget
                 textarea.addClass('hidden');
 
                 var editor = ace.edit(editDiv[0]);
+                var mode = ('{$this->mode}').trim();
+                var theme = ('{$this->theme}').trim();
                 editor.getSession().setValue(textarea.val());
-                editor.getSession().setMode('ace/mode/{$this->mode}');
-                editor.setTheme('ace/theme/{$this->theme}');
+                if (mode.length !== 0) {
+                    editor.getSession().setMode('ace/mode/' + mode);
+                }
+                if (theme.length !== 0) {
+                    editor.setTheme('ace/theme/' + theme);
+                }
 
                 editor.getSession().on('change', function() {
                     textarea.val(editor.getSession().getValue());

@@ -6,9 +6,9 @@ use yii\web\AssetBundle;
 
 class AceAsset extends AssetBundle
 {
-    public $sourcePath = '@bower/ace-builds';
+    public $sourcePath = '@bower/ace-builds/src';
     public $js = [
-        'src-min/ace.js'
+        'ace.js'
     ];
     public $depends = [
     ];
