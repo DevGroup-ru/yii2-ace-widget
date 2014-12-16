@@ -20,11 +20,11 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "yiisoft/yii2": "*",
-        "bower-asset/ace-builds": "*"
+        "yiisoft/yii2": "2.0.*",
+        "bower-asset/ace-builds": "~1.1"
     },
     "require-dev": {
-        "yiisoft/yii2-debug": "*"
+        "yiisoft/yii2-debug": "2.0.*"
     },
     "autoload": {
         "psr-4": {
