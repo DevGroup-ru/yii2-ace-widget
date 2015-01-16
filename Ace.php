@@ -2,48 +2,62 @@
 
 namespace devgroup\ace;
 
-use yii\base\Widget;
+use yii\helpers\BaseInflector;
+use yii\helpers\Html;
+use yii\widgets\InputWidget;
 
-class Ace extends Widget
+class Ace extends InputWidget
 {
     public $mode = 'php';
-    public $name = '';
-    public $options = [];
     public $theme = 'github';
-    public $value = '';
+
+    public function init()
+    {
+        parent::init();
+        if (!isset($this->options['id'])) {
+            $this->options['id'] = $this->id;
+        } else {
+            $this->id = $this->options['id'];
+        }
+
+        if (is_object($this->model)) {
+            $this->value = $this->model->{$this->attribute};
+            $this->name = Html::getInputName($this->model, $this->attribute);
+        }
+        $this->options['id'] .= '-ace';
+    }
 
     public function run()
     {
         $view = $this->getView();
         AceAsset::register($view);
+        $editorName = BaseInflector::camelize($this->id) . 'Editor';
         $view->registerJs(
-            "$('textarea[name={$this->name}]').each(function(index, element) {
-                var textarea = $(this);
+            "var textarea = $('#{$this->options['id']}');
 
-                var editDiv = $('<div>', {
-                    width: textarea.width(),
-                    height: textarea.height(),
-                    class: textarea.attr('class')
-                }).insertBefore(textarea);
+            var editDiv = $('<div>', {
+                width: textarea.width(),
+                height: textarea.height(),
+                class: textarea.attr('class')
+            }).insertBefore(textarea);
 
-                textarea.addClass('hidden');
+            textarea.addClass('hidden');
 
-                var editor = ace.edit(editDiv[0]);
-                var mode = ('{$this->mode}').trim();
-                var theme = ('{$this->theme}').trim();
-                editor.getSession().setValue(textarea.val());
-                if (mode.length !== 0) {
-                    editor.getSession().setMode('ace/mode/' + mode);
-                }
-                if (theme.length !== 0) {
-                    editor.setTheme('ace/theme/' + theme);
-                }
+            var {$editorName} = ace.edit(editDiv[0]);
+            var mode = ('{$this->mode}').trim();
+            var theme = ('{$this->theme}').trim();
+            {$editorName}.getSession().setValue(textarea.val());
+            if (mode.length !== 0) {
+                {$editorName}.getSession().setMode('ace/mode/' + mode);
+            }
+            if (theme.length !== 0) {
+                {$editorName}.setTheme('ace/theme/' + theme);
+            }
 
-                editor.getSession().on('change', function() {
-                    textarea.val(editor.getSession().getValue());
-                });
+            {$editorName}.getSession().on('change', function() {
+                textarea.val({$editorName}.getSession().getValue());
             });"
         );
-        return $this->render('ace', ['name' => $this->name, 'value' => $this->value, 'options' => $this->options]);
+        echo Html::textarea($this->name, $this->value, $this->options);
     }
 }
