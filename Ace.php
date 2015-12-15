@@ -2,14 +2,18 @@
 
 namespace devgroup\ace;
 
-use yii\helpers\BaseInflector;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Json;
+use yii\web\View;
 use yii\widgets\InputWidget;
 
 class Ace extends InputWidget
 {
     public $mode = 'php';
     public $theme = 'github';
+    public $jsOptions = [];
+    public $htmlOptions = [];
 
     public function init()
     {
@@ -31,33 +35,55 @@ class Ace extends InputWidget
     {
         $view = $this->getView();
         AceAsset::register($view);
-        $editorName = BaseInflector::camelize($this->id) . 'Editor';
-        $view->registerJs(
-            "var textarea = $('#{$this->options['id']}');
+        $jsOptions = Json::encode($this->jsOptions);
 
-            var editDiv = $('<div>', {
-                width: textarea.width(),
-                height: textarea.height(),
-                class: textarea.attr('class')
-            }).insertBefore(textarea);
-
-            textarea.addClass('hidden');
-
-            var {$editorName} = ace.edit(editDiv[0]);
-            var mode = ('{$this->mode}').trim();
-            var theme = ('{$this->theme}').trim();
-            {$editorName}.getSession().setValue(textarea.val());
-            if (mode.length !== 0) {
-                {$editorName}.getSession().setMode('ace/mode/' + mode);
-            }
-            if (theme.length !== 0) {
-                {$editorName}.setTheme('ace/theme/' + theme);
-            }
-
-            {$editorName}.getSession().on('change', function() {
-                textarea.val({$editorName}.getSession().getValue());
-            });"
+        $htmlOptions = Json::encode(
+            ArrayHelper::merge(
+                [
+                ],
+                $this->htmlOptions
+            )
         );
+        $aceWidgetJs = <<< JS
+    var aceWidget = {
+    "idElement" : null,
+    "mode" : null,
+    "theme" : null,
+    "jsOptions" : [],
+    "htmlOptions" : [],
+    "init" : function(){
+        var textarea = $("#" + this.idElement);
+        var editDiv = $('<div>', this.htmlOptions).insertBefore(textarea);
+        textarea.addClass('hidden');
+
+        var editor = ace.edit(editDiv[0]);
+        editor.setOptions(this.jsOptions);
+        editor.getSession().setValue(textarea.val());
+        if (this.mode.length !== 0) {
+                editor.getSession().setMode('ace/mode/' + this.mode);
+            }
+        if (this.theme.length !== 0) {
+                editor.setTheme('ace/theme/' + this.theme);
+            }
+
+        editor.getSession().on('change', function() {
+                textarea.val(editor.getSession().getValue());
+            });
+    }
+
+}
+JS;
+        $view->registerJs($aceWidgetJs, View::POS_READY, 'Yii2AceWidget');
+
+        $elementJs = <<< JS
+        aceWidget.idElement = "{$this->options['id']}";
+        aceWidget.mode = "{$this->mode}";
+        aceWidget.theme = "{$this->theme}";
+        aceWidget.jsOptions = {$jsOptions};
+        aceWidget.htmlOptions = {$htmlOptions};
+        aceWidget.init();
+JS;
+        $view->registerJs($elementJs);
         echo Html::textarea($this->name, $this->value, $this->options);
     }
 }
