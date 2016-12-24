@@ -25,7 +25,7 @@ class Ace extends InputWidget
         }
 
         if (is_object($this->model)) {
-            $this->value = $this->model->{$this->attribute};
+            $this->value = Html::getAttributeValue($this->model, $this->attribute);
             $this->name = Html::getInputName($this->model, $this->attribute);
         }
         $this->options['id'] .= '-ace';
